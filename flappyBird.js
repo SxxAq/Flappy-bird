@@ -28,12 +28,18 @@ let pipeY = 0;
 let velocityX = -4; // pipe moving speed
 let velocityY = 0; // bird jump speed
 let gravity = 0.4;
+
+//score
+let score = 0;
+let numberImages = [];
+let gameOverImg = new Image();
+gameOverImg.src = "./assets/gameover.png";
 window.onload = function () {
   board = document.getElementById("board");
   board.height = boardHeight;
   board.width = boardWidth;
   ctx = board.getContext("2d");
-
+  loadNumberImages();
   // drawing bird
   //   ctx.fillStyle = "green";
   //   ctx.fillRect(bird.x, bird.y, bird.width, bird.height);
@@ -59,6 +65,7 @@ window.onload = function () {
 function update() {
   requestAnimationFrame(update);
   if (checkCollisions()) {
+    drawGameOver();
     return;
   }
   ctx.clearRect(0, 0, board.width, board.height);
@@ -77,8 +84,16 @@ function update() {
     let pipe = pipeArray[i];
     pipe.x += velocityX;
     ctx.drawImage(pipe.img, pipe.x, pipe.y, pipe.width, pipe.height);
-    
+
+    // Check if the bird has passed the pipe
+    if (!pipe.passed && pipe.x + pipe.width < bird.x) {
+      pipe.passed = true;
+      score++;
+    }
   }
+
+  //draw score
+  drawScore();
 }
 
 function placePipes() {
@@ -121,6 +136,33 @@ function moveBird(e) {
   } else if (e.type === "click") {
     velocityY = -6;
   }
+}
+
+function loadNumberImages() {
+  for (let i = 0; i < 10; i++) {
+    let img = new Image();
+    img.src = `./assets/${i}.png`;
+    numberImages.push(img);
+  }
+}
+
+function drawScore() {
+  let scoreStr = score.toString();
+  let startX = board.width - scoreStr.length * 20 - 10; // Start drawing from the right
+
+  for (let i = 0; i < scoreStr.length; i++) {
+    let num = parseInt(scoreStr[i]);
+    let img = numberImages[num];
+    ctx.drawImage(img, startX + i * 20, 20, 20, 30); // Adjust the size and position as needed
+  }
+}
+
+function drawGameOver() {
+  ctx.drawImage(
+    gameOverImg,
+    (board.width - gameOverImg.width) / 2,
+    (board.height - gameOverImg.height) / 2
+  );
 }
 
 function checkCollisions() {
